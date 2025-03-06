@@ -1,39 +1,39 @@
 use crate::node::*;
-use typst::foundations::Content;
+use typst::foundations::{Content, StyleChain};
 
 pub trait ContentVisitor {
-    fn visit_equation(&mut self, content: &Content) -> Node;
-    fn visit_sequence(&mut self, content: &Content) -> Node;
-    fn visit_text(&mut self, content: &Content) -> Node;
-    fn visit_space(&mut self, content: &Content) -> Node;
-    fn visit_lr(&mut self, content: &Content) -> Node;
-    fn visit_attach(&mut self, content: &Content) -> Node;
-    fn visit_math_style(&mut self, content: &Content) -> Node;
-    fn visit_h(&mut self, content: &Content) -> Node;
-    fn visit_linebreak(&mut self, content: &Content) -> Node;
-    fn visit_align_point(&mut self, content: &Content) -> Node;
-    fn visit_frac(&mut self, content: &Content) -> Node;
-    fn visit_vec(&mut self, content: &Content) -> Node;
-    fn visit_mat(&mut self, content: &Content) -> Node;
-    fn visit_op(&mut self, content: &Content) -> Node;
-    fn visit_cases(&mut self, content: &Content) -> Node;
-    fn visit_overbracket(&mut self, content: &Content) -> Node;
-    fn visit_underbracket(&mut self, content: &Content) -> Node;
-    fn visit_overbrace(&mut self, content: &Content) -> Node;
-    fn visit_underbrace(&mut self, content: &Content) -> Node;
-    fn visit_overline(&mut self, content: &Content) -> Node;
-    fn visit_underline(&mut self, content: &Content) -> Node;
-    fn visit_root(&mut self, content: &Content) -> Node;
-    fn visit_mid(&mut self, content: &Content) -> Node;
-    fn visit_binom(&mut self, content: &Content) -> Node;
-    fn visit_class(&mut self, content: &Content) -> Node;
-    fn visit_cancel(&mut self, content: &Content) -> Node;
-    fn visit_limits(&mut self, content: &Content) -> Node;
-    fn visit_scripts(&mut self, content: &Content) -> Node;
-    fn visit_primes(&mut self, content: &Content) -> Node;
-    fn visit_accent(&mut self, content: &Content) -> Node;
-    fn visit_symbol(&mut self, content: &Content) -> Node;
-    fn visit_styled(&mut self, content: &Content) -> Node;
+    fn visit_equation(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_sequence(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_text(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_space(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_lr(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_attach(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_math_style(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_h(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_linebreak(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_align_point(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_frac(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_vec(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_mat(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_op(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_cases(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_overbracket(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_underbracket(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_overbrace(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_underbrace(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_overline(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_underline(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_root(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_mid(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_binom(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_class(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_cancel(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_limits(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_scripts(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_primes(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_accent(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_symbol(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
+    fn visit_styled(&mut self, content: &Content, style_chain: &StyleChain) -> Node;
 }
 
 pub trait ContentType {
@@ -295,43 +295,43 @@ impl ContentType for Content {
 }
 
 pub trait ContentExt {
-    fn accept(&self, visitor: &mut dyn ContentVisitor) -> Node;
+    fn accept(&self, visitor: &mut dyn ContentVisitor, style_chain: &StyleChain) -> Node;
 }
 
 impl ContentExt for Content {
-    fn accept(&self, visitor: &mut dyn ContentVisitor) -> Node {
+    fn accept(&self, visitor: &mut dyn ContentVisitor, style_chain: &StyleChain) -> Node {
         match self {
-            _ if self.is_equation() => visitor.visit_equation(self),
-            _ if self.is_space() => visitor.visit_space(self),
-            _ if self.is_text() => visitor.visit_text(self),
-            _ if self.is_lr() => visitor.visit_lr(self),
-            _ if self.is_attach() => visitor.visit_attach(self),
-            _ if self.is_h() => visitor.visit_h(self),
-            _ if self.is_linebreak() => visitor.visit_linebreak(self),
-            _ if self.is_align_point() => visitor.visit_align_point(self),
-            _ if self.is_frac() => visitor.visit_frac(self),
-            _ if self.is_vec() => visitor.visit_vec(self),
-            _ if self.is_mat() => visitor.visit_mat(self),
-            _ if self.is_op() => visitor.visit_op(self),
-            _ if self.is_cases() => visitor.visit_cases(self),
-            _ if self.is_sequence() => visitor.visit_sequence(self),
-            _ if self.is_binom() => visitor.visit_binom(self),
-            _ if self.is_cancel() => visitor.visit_cancel(self),
-            _ if self.is_overbracket() => visitor.visit_overbracket(self),
-            _ if self.is_underbracket() => visitor.visit_underbracket(self),
-            _ if self.is_overline() => visitor.visit_overline(self),
-            _ if self.is_underline() => visitor.visit_underline(self),
-            _ if self.is_overbrace() => visitor.visit_overbrace(self),
-            _ if self.is_underbrace() => visitor.visit_underbrace(self),
-            _ if self.is_root() => visitor.visit_root(self),
-            _ if self.is_mid() => visitor.visit_mid(self),
-            _ if self.is_class() => visitor.visit_class(self),
-            _ if self.is_limits() => visitor.visit_limits(self),
-            _ if self.is_scripts() => visitor.visit_scripts(self),
-            _ if self.is_primes() => visitor.visit_primes(self),
-            _ if self.is_accent() => visitor.visit_accent(self),
-            _ if self.is_symbol() => visitor.visit_symbol(self),
-            _ if self.is_styled() => visitor.visit_styled(self),
+            _ if self.is_equation() => visitor.visit_equation(self, &style_chain),
+            _ if self.is_space() => visitor.visit_space(self, &style_chain),
+            _ if self.is_text() => visitor.visit_text(self, &style_chain),
+            _ if self.is_lr() => visitor.visit_lr(self, &style_chain),
+            _ if self.is_attach() => visitor.visit_attach(self, &style_chain),
+            _ if self.is_h() => visitor.visit_h(self, &style_chain),
+            _ if self.is_linebreak() => visitor.visit_linebreak(self, &style_chain),
+            _ if self.is_align_point() => visitor.visit_align_point(self, &style_chain),
+            _ if self.is_frac() => visitor.visit_frac(self, &style_chain),
+            _ if self.is_vec() => visitor.visit_vec(self, &style_chain),
+            _ if self.is_mat() => visitor.visit_mat(self, &style_chain),
+            _ if self.is_op() => visitor.visit_op(self, &style_chain),
+            _ if self.is_cases() => visitor.visit_cases(self, &style_chain),
+            _ if self.is_sequence() => visitor.visit_sequence(self, &style_chain),
+            _ if self.is_binom() => visitor.visit_binom(self, &style_chain),
+            _ if self.is_cancel() => visitor.visit_cancel(self, &style_chain),
+            _ if self.is_overbracket() => visitor.visit_overbracket(self, &style_chain),
+            _ if self.is_underbracket() => visitor.visit_underbracket(self, &style_chain),
+            _ if self.is_overline() => visitor.visit_overline(self, &style_chain),
+            _ if self.is_underline() => visitor.visit_underline(self, &style_chain),
+            _ if self.is_overbrace() => visitor.visit_overbrace(self, &style_chain),
+            _ if self.is_underbrace() => visitor.visit_underbrace(self, &style_chain),
+            _ if self.is_root() => visitor.visit_root(self, &style_chain),
+            _ if self.is_mid() => visitor.visit_mid(self, &style_chain),
+            _ if self.is_class() => visitor.visit_class(self, &style_chain),
+            _ if self.is_limits() => visitor.visit_limits(self, &style_chain),
+            _ if self.is_scripts() => visitor.visit_scripts(self, &style_chain),
+            _ if self.is_primes() => visitor.visit_primes(self, &style_chain),
+            _ if self.is_accent() => visitor.visit_accent(self, &style_chain),
+            _ if self.is_symbol() => visitor.visit_symbol(self, &style_chain),
+            _ if self.is_styled() => visitor.visit_styled(self, &style_chain),
             // This ignores the elements and gracefully fails;
             // Must add results and errors eventually.
             _ => Node::Array(vec![]),
