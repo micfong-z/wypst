@@ -1,20 +1,16 @@
 use log::warn;
-
-use typst;
 use typst::foundations::Content;
-use typst::math::Accent;
 
 use crate::katex;
 use crate::node::*;
 use crate::content::*;
-use crate::ext::*;
 use crate::utils::insert_separator;
 use crate::symbol;
 
 pub fn convert(root: &Content) -> Node {
     let styles = typst::foundations::StyleChain::default();
     let mut converter = ContentConverter {
-        styles: styles,
+        styles,
         parent: None,
         position: None
     };
@@ -31,13 +27,13 @@ pub struct ContentConverter<'a> {
 impl ContentVisitor for ContentConverter<'_> {
     fn visit_equation(&mut self, content: &Content) -> Node {
         let elem = content.to_equation();
-        Node::Array(elem.body().accept(self).into_array())
+        Node::Array(elem.body.accept(self).into_array())
     }
 
     fn visit_op(&mut self, content: &Content) -> Node {
         let elem = content.to_op();
 
-        let _text = elem.text();
+        let _text = &elem.text;
         let _limits = elem.limits(self.styles);
 
         let name = format!("\\{}", _text.plain_text()).to_string();
@@ -55,7 +51,7 @@ impl ContentVisitor for ContentConverter<'_> {
         let elem = content.to_mat();
         let mut constructor = katex::ArrayConstructor::default();
 
-        for row in elem.rows() {
+        for row in &elem.rows {
             constructor.next_row();
             for content in row {
                 let node = content.accept(self);
@@ -70,11 +66,11 @@ impl ContentVisitor for ContentConverter<'_> {
             }
         }
         let array = constructor.builder().build().unwrap().into_node();
-        let delim = elem.delim(self.styles).unwrap();
+        let delim = elem.delim(self.styles);
         let leftright = katex::LeftRightBuilder::default()
             .body([array].to_vec())
-            .left(delim.open().to_string())
-            .right(delim.close().to_string())
+            .left(delim.open().unwrap().to_string())
+            .right(delim.close().unwrap().to_string())
             .build().unwrap().into_node();
         Node::Node(leftright)
     }
@@ -87,8 +83,8 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_frac(&mut self, content: &Content) -> Node {
         let elem = content.to_frac();
 
-        let _num = elem.num();
-        let _denom = elem.denom();
+        let _num = &elem.num;
+        let _denom = &elem.denom;
 
         let numer = katex::OrdGroupBuilder::default()
             .body(_num.accept(self).into_array())
@@ -133,7 +129,7 @@ impl ContentVisitor for ContentConverter<'_> {
 
         fn induced_space(elem: &Content) -> Option<Node> {
             if elem.is_text() {
-                let text = elem.to_text().text();
+                let text = &elem.to_text().text;
                 if text.chars().count() == 1 {
                     match text.as_str() {
                         "|" => {
@@ -183,7 +179,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_lr(&mut self, content: &Content) -> Node {
         let elem = content.to_lr();
 
-        let _body = elem.body();
+        let _body = &elem.body;
         let _size = elem.size(self.styles); // unsupported
 
         let mut body = _body.accept(self).into_array();
@@ -225,7 +221,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_attach(&mut self, content: &Content) -> Node {
         let elem = content.to_attach();
 
-        let _base = elem.base();
+        let _base = &elem.base;
         let _t = elem.t(self.styles);
         let _b = elem.b(self.styles);
         let _tl = elem.tl(self.styles); // unsupported
@@ -250,49 +246,50 @@ impl ContentVisitor for ContentConverter<'_> {
     }
 
     fn visit_math_style(&mut self, content: &Content) -> Node {
-        let elem = content.to_math_style();
+        // let elem = content.to_math_style();
 
-        let _body = elem.body();
-        let _variant = elem.variant(self.styles);
-        let _bold = elem.bold(self.styles); // unsupported
-        let _italic = elem.italic(self.styles); // unsupported
-        let _size = elem.size(self.styles); // unsupported
-        let _cramped = elem.cramped(self.styles); // unsupported
-        if _bold.is_some() { warn!("Bold options are unsupported."); }
-        if _italic.is_some() { warn!("Italic options are unsupported."); }
-        if _size.is_some() { warn!("Size options are unsupported."); }
-        if _cramped.is_some() { warn!("Cramped options are unsupported."); }
+        // let _body = &elem.body;
+        // let _variant = elem.variant(self.styles);
+        // let _bold = elem.bold(self.styles); // unsupported
+        // let _italic = elem.italic(self.styles); // unsupported
+        // let _size = elem.size(self.styles); // unsupported
+        // let _cramped = elem.cramped(self.styles); // unsupported
+        // if _bold.is_some() { warn!("Bold options are unsupported."); }
+        // if _italic.is_some() { warn!("Italic options are unsupported."); }
+        // if _size.is_some() { warn!("Size options are unsupported."); }
+        // if _cramped.is_some() { warn!("Cramped options are unsupported."); }
 
-        let body = _body.accept(self).into_node().unwrap();
-        let font = match _variant {
-            Some(typst::math::MathVariant::Bb) => "mathbb",
-            Some(typst::math::MathVariant::Cal) => "mathcal",
-            Some(typst::math::MathVariant::Serif) => "mathrm",
-            Some(typst::math::MathVariant::Sans) => "mathsf",
-            Some(typst::math::MathVariant::Frak) => "mathfrak",
-            Some(typst::math::MathVariant::Mono) => "mathtt",
-            None => "mathnormal"
-        }.to_string();
+        // let body = _body.accept(self).into_node().unwrap();
+        // let font = match _variant {
+        //     Some(typst::math::MathVariant::Bb) => "mathbb",
+        //     Some(typst::math::MathVariant::Cal) => "mathcal",
+        //     Some(typst::math::MathVariant::Serif) => "mathrm",
+        //     Some(typst::math::MathVariant::Sans) => "mathsf",
+        //     Some(typst::math::MathVariant::Frak) => "mathfrak",
+        //     Some(typst::math::MathVariant::Mono) => "mathtt",
+        //     None => "mathnormal"
+        // }.to_string();
 
-        let node = katex::FontBuilder::default()
-            .body(Box::new(body))
-            .font(font)
-            .build().unwrap().into_node();
-        Node::Node(node)
+        // let node = katex::FontBuilder::default()
+        //     .body(Box::new(body))
+        //     .font(font)
+        //     .build().unwrap().into_node();
+        // Node::Node(node)
+        unreachable!()
     }
 
     fn visit_binom(&mut self, content: &Content) -> Node {
         let elem = content.to_binom();
 
-        let _upper = elem.upper();
-        let _lower = elem.lower();
+        let _upper = &elem.upper;
+        let _lower = &elem.lower;
 
         let numer = katex::OrdGroupBuilder::default()
             .body(_upper.accept(self).into_array())
             .build().unwrap().into_node();
 
         let separator = katex::Symbol::get(katex::Mode::Math, ',').create_node();
-        let denom_body_parts: Vec<katex::NodeArray> = elem.lower().iter().map(|c| c.accept(self).into_array()).collect();
+        let denom_body_parts: Vec<katex::NodeArray> = elem.lower.iter().map(|c| c.accept(self).into_array()).collect();
         let denom_body = insert_separator(&denom_body_parts, [separator].to_vec()).iter().flatten().cloned().collect();
         let denom = katex::OrdGroupBuilder::default()
             .body(denom_body)
@@ -313,7 +310,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_cancel(&mut self, content: &Content) -> Node {
         let elem = content.to_cancel();
 
-        let _body = elem.body();
+        let _body = &elem.body;
         let _length = elem.length(self.styles); // unsupported
         let _inverted = elem.inverted(self.styles); // unsupported
         let _cross = elem.cross(self.styles); // unsupported
@@ -339,7 +336,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_limits(&mut self, content: &Content) -> Node {
         let elem = content.to_limits();
 
-        let _body = elem.body();
+        let _body = &elem.body;
         let _inline = elem.inline(self.styles); // unsupported
 
         let body = _body.accept(self).into_array();
@@ -358,7 +355,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_scripts(&mut self, content: &Content) -> Node {
         let elem = content.to_scripts();
 
-        let _body = elem.body();
+        let _body = &elem.body;
 
         let body = _body.accept(self).into_array();
 
@@ -375,7 +372,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_mid(&mut self, content: &Content) -> Node {
         let elem = content.to_mid();
 
-        let _body = elem.body();
+        let _body = &elem.body;
 
         let delim = _body.plain_text().to_string();
         let node = katex::MiddleBuilder::default()
@@ -387,7 +384,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_overbrace(&mut self, content: &Content) -> Node {
         let elem = content.to_overbrace();
 
-        let _body = elem.body();
+        let _body = &elem.body;
         let _annotation = elem.annotation(self.styles);
 
         let base = katex::HorizBraceBuilder::default()
@@ -407,7 +404,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_overline(&mut self, content: &Content) -> Node {
         let elem = content.to_overline();
 
-        let _body = elem.body();
+        let _body = &elem.body;
 
         let body = _body.accept(self).into_ordgroup(katex::Mode::Math).into_node();
         let node = katex::OverlineBuilder::default()
@@ -420,7 +417,7 @@ impl ContentVisitor for ContentConverter<'_> {
         let elem = content.to_root();
 
         let _index = elem.index(self.styles);
-        let _radicand = elem.radicand();
+        let _radicand = &elem.radicand;
 
         let index = _index.map(|c| c.accept(self).into_ordgroup(katex::Mode::Math).into_node());
         let body = _radicand.accept(self).into_ordgroup(katex::Mode::Math).into_node();
@@ -435,7 +432,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_underbrace(&mut self, content: &Content) -> Node {
         let elem = content.to_underbrace();
 
-        let _body = elem.body();
+        let _body = &elem.body;
         let _annotation = elem.annotation(self.styles);
 
         let base = katex::HorizBraceBuilder::default()
@@ -455,7 +452,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_underline(&mut self, content: &Content) -> Node {
         let elem = content.to_underline();
 
-        let _body = elem.body();
+        let _body = &elem.body;
 
         let body = _body.accept(self).into_ordgroup(katex::Mode::Math).into_node();
 
@@ -468,7 +465,7 @@ impl ContentVisitor for ContentConverter<'_> {
     fn visit_h(&mut self, content: &Content) -> Node {
         let elem = content.to_h();
 
-        let _amount = elem.amount();
+        let _amount = &elem.amount;
         let _weak = elem.weak(self.styles); // unsupported
 
         let length = match _amount {
@@ -505,56 +502,38 @@ impl ContentVisitor for ContentConverter<'_> {
         let elem = content.to_primes();
 
         let node = katex::OrdGroupBuilder::default()
-            .body(vec![katex::Symbol::get(katex::Mode::Math, '′').create_node(); *elem.count()])
+            .body(vec![katex::Symbol::get(katex::Mode::Math, '′').create_node(); elem.count])
             .build().unwrap().into_node();
         Node::Node(node)
     }
 
     fn visit_accent(&mut self, content: &Content) -> Node { 
         let elem = content.to_accent();
-        
-        let _label = if elem.accent() == &Accent::new('\u{300}') {
-            "\\grave".to_string()
-        } else if elem.accent() == &Accent::new('\u{301}') {
-            "\\acute".to_string()
-        } else if elem.accent() == &Accent::new('\u{302}') {
-            "\\hat".to_string()
-        } else if elem.accent() == &Accent::new('\u{303}') {
-            "\\tilde".to_string()
-        } else if elem.accent() == &Accent::new('\u{304}') {
-            "\\bar".to_string()
-        } else if elem.accent() == &Accent::new('\u{305}') {
-            "\\overline".to_string()
-        } else if elem.accent() == &Accent::new('\u{306}') {
-            "\\breve".to_string()
-        } else if elem.accent() == &Accent::new('\u{307}') {
-            "\\dot".to_string()
-        } else if elem.accent() == &Accent::new('\u{308}') {
-            "\\ddot".to_string()
-        } else if elem.accent() == &Accent::new('\u{20db}') {
-            "\\dddot".to_string()
-        } else if elem.accent() == &Accent::new('\u{20dc}') {
-            "\\ddddot".to_string()
-        } else if elem.accent() == &Accent::new('\u{30a}') {
-            "\\mathring".to_string()
-        } else if elem.accent() == &Accent::new('\u{30b}') {
-            "\\H".to_string()
-        } else if elem.accent() == &Accent::new('\u{30c}') {
-            "\\check".to_string()
-        } else if elem.accent() == &Accent::new('\u{20d7}') {
-            "\\overrightarrow".to_string()
-        } else if elem.accent() == &Accent::new('\u{20d6}') {
-            "\\overleftarrow".to_string()
-        } else if elem.accent() == &Accent::new('\u{20e1}') {
-            "\\overleftrightarrow".to_string()
-        } else if elem.accent() == &Accent::new('\u{20d1}') {
-            "\\overrightharpoon".to_string()
-        } else if elem.accent() == &Accent::new('\u{20d0}') {
-            "\\overleftharpoon".to_string()
-        } else {
-            unimplemented!()
-        };
-        let _base = elem.base();
+
+        let _label = match elem.accent.0 {
+            '\u{300}' => "\\grave",
+            '\u{301}' => "\\acute",
+            '\u{302}' => "\\hat",
+            '\u{303}' => "\\tilde",
+            '\u{304}' => "\\bar",
+            '\u{305}' => "\\overline",
+            '\u{306}' => "\\breve",
+            '\u{307}' => "\\dot",
+            '\u{308}' => "\\ddot",
+            '\u{20db}' => "\\dddot",
+            '\u{20dc}' => "\\ddddot",
+            '\u{30a}' => "\\mathring",
+            '\u{30b}' => "\\H",
+            '\u{30c}' => "\\check",
+            '\u{20d7}' => "\\overrightarrow",
+            '\u{20d6}' => "\\overleftarrow",
+            '\u{20e1}' => "\\overleftrightarrow",
+            '\u{20d1}' => "\\overrightharpoon",
+            '\u{20d0}' => "\\overleftharpoon",
+            _ => unimplemented!(),
+        }.to_string();
+
+        let _base = &elem.base;
         let node = katex::AccentBuilder::default()
             .label(_label)
             .is_stretchy(Some(true))
@@ -713,7 +692,7 @@ impl<'a> CasesConverter<'a> {
     }
 
     pub fn process_children(&mut self, visitor: &mut ContentConverter) {
-        for child in self.elem.children() {
+        for child in &self.elem.children {
             if child.is_sequence() {
                 let mut converter = SequenceConverter::new(child);
                 converter.process_sequence_elements(visitor);
@@ -739,7 +718,7 @@ impl<'a> VecConverter<'a> {
     pub fn convert(&mut self, visitor: &mut ContentConverter) -> Node {
         let mut constructor = katex::ArrayConstructor::default();
 
-        for content in self.elem.children() {
+        for content in &self.elem.children {
             constructor.next_row();
             let node = content.accept(visitor).into_node().unwrap();
             let ordgroup = katex::OrdGroupBuilder::default()
@@ -758,11 +737,11 @@ impl<'a> VecConverter<'a> {
             .hskip_before_and_after(false)
             .row_gaps([None].to_vec())
             .build().unwrap().into_node();
-        let delim = self.elem.delim(visitor.styles).unwrap();
+        let delim = self.elem.delim(visitor.styles);
         let leftright = katex::LeftRightBuilder::default()
             .body([array].to_vec())
-            .left(delim.open().to_string())
-            .right(delim.close().to_string())
+            .left(delim.open().unwrap().to_string())
+            .right(delim.close().unwrap().to_string())
             .build().unwrap().into_node();
         Node::Node(leftright)
     }
@@ -780,7 +759,7 @@ impl<'a> TextConverter<'a> {
     }
 
     pub fn convert(&mut self) -> Node {
-        let text = self.elem.text();
+        let text = &self.elem.text;
         if text.chars().count() == 1 {
             let name = text.chars().next().unwrap();
             self.convert_char(name, katex::Mode::Math)

@@ -1,13 +1,10 @@
 use wasm_bindgen::prelude::*;
 use serde_wasm_bindgen::to_value;
-use serde_json;
-use typst;
 
 mod converter;
 mod katex;
 mod utils;
 mod node;
-mod ext;
 mod content;
 mod symbol;
 

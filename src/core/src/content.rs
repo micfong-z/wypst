@@ -40,7 +40,6 @@ pub trait ContentType {
     fn is_text(&self) -> bool;
     fn is_lr(&self) -> bool;
     fn is_attach(&self) -> bool;
-    fn is_math_style(&self) -> bool;
     fn is_h(&self) -> bool;
     fn is_linebreak(&self) -> bool;
     fn is_align_point(&self) -> bool;
@@ -64,13 +63,13 @@ pub trait ContentType {
     fn is_scripts(&self) -> bool;
     fn is_primes(&self) -> bool;
     fn is_accent(&self) -> bool;
+    fn is_sequence(&self) -> bool;
 
     fn to_equation(&self) -> &typst::math::EquationElem;
     fn to_space(&self) -> &typst::text::SpaceElem;
     fn to_text(&self) -> &typst::text::TextElem;
     fn to_lr(&self) -> &typst::math::LrElem;
     fn to_attach(&self) -> &typst::math::AttachElem;
-    fn to_math_style(&self) -> &typst::math::MathStyleElem;
     fn to_h(&self) -> &typst::layout::HElem;
     fn to_linebreak(&self) -> &typst::text::LinebreakElem;
     fn to_align_point(&self) -> &typst::math::AlignPointElem;
@@ -94,6 +93,7 @@ pub trait ContentType {
     fn to_scripts(&self) -> &typst::math::ScriptsElem;
     fn to_primes(&self) -> &typst::math::PrimesElem;
     fn to_accent(&self) -> &typst::math::AccentElem;
+    fn to_sequence(&self) -> Option<impl Iterator<Item = &Content>>;
 }
 
 impl ContentType for Content {
@@ -111,9 +111,6 @@ impl ContentType for Content {
     }
     fn is_attach(&self) -> bool {
         self.is::<typst::math::AttachElem>()
-    }
-    fn is_math_style(&self) -> bool {
-        self.is::<typst::math::MathStyleElem>()
     }
     fn is_h(&self) -> bool {
         self.is::<typst::layout::HElem>()
@@ -184,93 +181,99 @@ impl ContentType for Content {
     fn is_accent(&self) -> bool {
         self.is::<typst::math::AccentElem>()
     }
+    fn is_sequence(&self) -> bool {
+        self.is::<typst::foundations::SequenceElem>()
+    }
 
     fn to_equation(&self) -> &typst::math::EquationElem {
-        self.to::<typst::math::EquationElem>().unwrap()
+        self.to_packed::<typst::math::EquationElem>().unwrap()
     }
     fn to_space(&self) -> &typst::text::SpaceElem {
-        self.to::<typst::text::SpaceElem>().unwrap()
+        self.to_packed::<typst::text::SpaceElem>().unwrap()
     }
     fn to_text(&self) -> &typst::text::TextElem {
-        self.to::<typst::text::TextElem>().unwrap()
+        self.to_packed::<typst::text::TextElem>().unwrap()
     }
     fn to_lr(&self) -> &typst::math::LrElem {
-        self.to::<typst::math::LrElem>().unwrap()
+        self.to_packed::<typst::math::LrElem>().unwrap()
     }
     fn to_attach(&self) -> &typst::math::AttachElem {
-        self.to::<typst::math::AttachElem>().unwrap()
-    }
-    fn to_math_style(&self) -> &typst::math::MathStyleElem {
-        self.to::<typst::math::MathStyleElem>().unwrap()
+        self.to_packed::<typst::math::AttachElem>().unwrap()
     }
     fn to_h(&self) -> &typst::layout::HElem {
-        self.to::<typst::layout::HElem>().unwrap()
+        self.to_packed::<typst::layout::HElem>().unwrap()
     }
     fn to_linebreak(&self) -> &typst::text::LinebreakElem {
-        self.to::<typst::text::LinebreakElem>().unwrap()
+        self.to_packed::<typst::text::LinebreakElem>().unwrap()
     }
     fn to_align_point(&self) -> &typst::math::AlignPointElem {
-        self.to::<typst::math::AlignPointElem>().unwrap()
+        self.to_packed::<typst::math::AlignPointElem>().unwrap()
     }
     fn to_frac(&self) -> &typst::math::FracElem {
-        self.to::<typst::math::FracElem>().unwrap()
+        self.to_packed::<typst::math::FracElem>().unwrap()
     }
     fn to_vec(&self) -> &typst::math::VecElem {
-        self.to::<typst::math::VecElem>().unwrap()
+        self.to_packed::<typst::math::VecElem>().unwrap()
     }
     fn to_mat(&self) -> &typst::math::MatElem {
-        self.to::<typst::math::MatElem>().unwrap()
+        self.to_packed::<typst::math::MatElem>().unwrap()
     }
     fn to_op(&self) -> &typst::math::OpElem {
-        self.to::<typst::math::OpElem>().unwrap()
+        self.to_packed::<typst::math::OpElem>().unwrap()
     }
     fn to_cases(&self) -> &typst::math::CasesElem {
-        self.to::<typst::math::CasesElem>().unwrap()
+        self.to_packed::<typst::math::CasesElem>().unwrap()
     }
     fn to_overbracket(&self) -> &typst::math::OverbracketElem {
-        self.to::<typst::math::OverbracketElem>().unwrap()
+        self.to_packed::<typst::math::OverbracketElem>().unwrap()
     }
     fn to_underbracket(&self) -> &typst::math::UnderbracketElem {
-        self.to::<typst::math::UnderbracketElem>().unwrap()
+        self.to_packed::<typst::math::UnderbracketElem>().unwrap()
     }
     fn to_overbrace(&self) -> &typst::math::OverbraceElem {
-        self.to::<typst::math::OverbraceElem>().unwrap()
+        self.to_packed::<typst::math::OverbraceElem>().unwrap()
     }
     fn to_underbrace(&self) -> &typst::math::UnderbraceElem {
-        self.to::<typst::math::UnderbraceElem>().unwrap()
+        self.to_packed::<typst::math::UnderbraceElem>().unwrap()
     }
     fn to_overline(&self) -> &typst::math::OverlineElem {
-        self.to::<typst::math::OverlineElem>().unwrap()
+        self.to_packed::<typst::math::OverlineElem>().unwrap()
     }
     fn to_underline(&self) -> &typst::math::UnderlineElem {
-        self.to::<typst::math::UnderlineElem>().unwrap()
+        self.to_packed::<typst::math::UnderlineElem>().unwrap()
     }
     fn to_root(&self) -> &typst::math::RootElem {
-        self.to::<typst::math::RootElem>().unwrap()
+        self.to_packed::<typst::math::RootElem>().unwrap()
     }
     fn to_mid(&self) -> &typst::math::MidElem {
-        self.to::<typst::math::MidElem>().unwrap()
+        self.to_packed::<typst::math::MidElem>().unwrap()
     }
     fn to_binom(&self) -> &typst::math::BinomElem {
-        self.to::<typst::math::BinomElem>().unwrap()
+        self.to_packed::<typst::math::BinomElem>().unwrap()
     }
     fn to_class(&self) -> &typst::math::ClassElem {
-        self.to::<typst::math::ClassElem>().unwrap()
+        self.to_packed::<typst::math::ClassElem>().unwrap()
     }
     fn to_cancel(&self) -> &typst::math::CancelElem {
-        self.to::<typst::math::CancelElem>().unwrap()
+        self.to_packed::<typst::math::CancelElem>().unwrap()
     }
     fn to_limits(&self) -> &typst::math::LimitsElem {
-        self.to::<typst::math::LimitsElem>().unwrap()
+        self.to_packed::<typst::math::LimitsElem>().unwrap()
     }
     fn to_scripts(&self) -> &typst::math::ScriptsElem {
-        self.to::<typst::math::ScriptsElem>().unwrap()
+        self.to_packed::<typst::math::ScriptsElem>().unwrap()
     }
     fn to_primes(&self) -> &typst::math::PrimesElem {
-        self.to::<typst::math::PrimesElem>().unwrap()
+        self.to_packed::<typst::math::PrimesElem>().unwrap()
     }
     fn to_accent(&self) -> &typst::math::AccentElem {
-        self.to::<typst::math::AccentElem>().unwrap()
+        self.to_packed::<typst::math::AccentElem>().unwrap()
+    }
+
+    fn to_sequence(&self) -> Option<impl Iterator<Item = &Content>> {
+        let sequence = self.to_packed::<typst::foundations::SequenceElem>()?;
+
+        Some(sequence.children.iter())
     }
 }
 
@@ -286,7 +289,6 @@ impl ContentExt for Content {
             _ if self.is_text() => visitor.visit_text(self),
             _ if self.is_lr() => visitor.visit_lr(self),
             _ if self.is_attach() => visitor.visit_attach(self),
-            _ if self.is_math_style() => visitor.visit_math_style(self),
             _ if self.is_h() => visitor.visit_h(self),
             _ if self.is_linebreak() => visitor.visit_linebreak(self),
             _ if self.is_align_point() => visitor.visit_align_point(self),
