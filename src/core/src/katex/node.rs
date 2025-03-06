@@ -12,6 +12,7 @@ pub type NodeArray2D = Vec<Vec<Node>>;
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
+#[allow(unused)]
 pub enum Node {
     Array(Array),
     CdLabel(CdLabel),
@@ -808,7 +809,7 @@ into_node!(
 
 impl std::fmt::Debug for Node {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", serde_json::to_value(&self).unwrap())
+        write!(f, "{}", serde_json::to_value(self).unwrap())
     }
 }
 

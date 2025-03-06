@@ -122,7 +122,7 @@ pub fn eval(world: &dyn typst::World, string: &str) -> Result<typst::foundations
 
 pub fn main() {
     // Try to construct a MathContext object.
-    let mut world = FakeWorld::new();
+    let world = FakeWorld::new();
     let content = eval(&world, "bb(italic(upright(a))/bold(x))").unwrap();
     let math: &typst::math::EquationElem = content.to_packed::<typst::math::EquationElem>().unwrap();
     println!("{:#?}", math);

@@ -1,13 +1,7 @@
 use log::warn;
-use typst::foundations::Chainable;
-use typst::foundations::Content;
-use typst::foundations::StyleChain;
+use typst::foundations::{Chainable, Content, StyleChain};
 
-use crate::katex;
-use crate::node::*;
-use crate::content::*;
-use crate::utils::insert_separator;
-use crate::symbol;
+use crate::{katex, node::*, content::*, utils::insert_separator, symbol};
 
 pub fn convert(root: &Content) -> Node {
     let styles = typst::foundations::StyleChain::default();
@@ -185,7 +179,7 @@ impl ContentVisitor for ContentConverter {
                 return space;
             }
         }
-        return Node::Array(Vec::new());
+        Node::Array(Vec::new())
     }
 
     fn visit_text(&mut self, content: &Content, style_chain: &StyleChain) -> Node {
@@ -255,44 +249,11 @@ impl ContentVisitor for ContentConverter {
         let sub = _b.map(|c| c.accept(self, style_chain)).map(|n| n.into_node_fallback_ordgroup(katex::Mode::Math));
 
         let node = katex::SupSubBuilder::default()
-            .base(Some(base).map(Box::new))
+            .base(Some(Box::new(base)))
             .sup(sup.map(Box::new))
             .sub(sub.map(Box::new))
             .build().unwrap().into_node();
         Node::Node(node)
-    }
-
-    fn visit_math_style(&mut self, content: &Content, style_chain: &StyleChain) -> Node {
-        // let elem = content.to_math_style();
-
-        // let _body = &elem.body;
-        // let _variant = elem.variant(*style_chain);
-        // let _bold = elem.bold(*style_chain); // unsupported
-        // let _italic = elem.italic(*style_chain); // unsupported
-        // let _size = elem.size(*style_chain); // unsupported
-        // let _cramped = elem.cramped(*style_chain); // unsupported
-        // if _bold.is_some() { warn!("Bold options are unsupported."); }
-        // if _italic.is_some() { warn!("Italic options are unsupported."); }
-        // if _size.is_some() { warn!("Size options are unsupported."); }
-        // if _cramped.is_some() { warn!("Cramped options are unsupported."); }
-
-        // let body = _body.accept(self, style_chain).into_node().unwrap();
-        // let font = match _variant {
-        //     Some(typst::math::MathVariant::Bb) => "mathbb",
-        //     Some(typst::math::MathVariant::Cal) => "mathcal",
-        //     Some(typst::math::MathVariant::Serif) => "mathrm",
-        //     Some(typst::math::MathVariant::Sans) => "mathsf",
-        //     Some(typst::math::MathVariant::Frak) => "mathfrak",
-        //     Some(typst::math::MathVariant::Mono) => "mathtt",
-        //     None => "mathnormal"
-        // }.to_string();
-
-        // let node = katex::FontBuilder::default()
-        //     .body(Box::new(body))
-        //     .font(font)
-        //     .build().unwrap().into_node();
-        // Node::Node(node)
-        unreachable!()
     }
 
     fn visit_binom(&mut self, content: &Content, style_chain: &StyleChain) -> Node {
@@ -589,7 +550,7 @@ impl<'a> SequenceConverter<'a> {
     }
 
     pub fn convert_flatten(&mut self) -> Node {
-        let nodes = self.body.iter().flatten().map(|n| n.clone().into_array()).flatten();
+        let nodes = self.body.iter().flatten().flat_map(|n| n.clone().into_array());
         Node::Array(nodes.collect())
     }
 
@@ -644,7 +605,7 @@ impl<'a> SequenceConverter<'a> {
         if self.body.is_empty() {
             self.body.push(Vec::new())
         }
-        let nodes = self.stack.iter().map(|n| n.clone().into_array()).flatten().collect();
+        let nodes = self.stack.iter().flat_map(|n| n.clone().into_array()).collect();
         self.body.last_mut().unwrap().push(Node::Array(nodes));
         self.stack.clear();
     }
