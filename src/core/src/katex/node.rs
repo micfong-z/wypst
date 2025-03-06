@@ -323,6 +323,7 @@ pub struct OpToken {
 }
 
 #[derive(Clone, Serialize, Builder)]
+#[serde(rename_all = "camelCase")]
 pub struct Accent {
     #[builder(default = "Mode::Math")]
     pub mode: Mode,
@@ -337,6 +338,7 @@ pub struct Accent {
 }
 
 #[derive(Clone, Serialize, Builder)]
+#[serde(rename_all = "camelCase")]
 pub struct AccentUnder {
     #[builder(default = "Mode::Math")]
     pub mode: Mode,

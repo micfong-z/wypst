@@ -1,5 +1,4 @@
 use crate::node::*;
-use typst;
 use typst::foundations::Content;
 
 pub trait ContentVisitor {
