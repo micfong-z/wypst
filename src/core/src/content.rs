@@ -32,6 +32,8 @@ pub trait ContentVisitor {
     fn visit_scripts(&mut self, content: &Content) -> Node;
     fn visit_primes(&mut self, content: &Content) -> Node;
     fn visit_accent(&mut self, content: &Content) -> Node;
+    fn visit_symbol(&mut self, content: &Content) -> Node;
+    fn visit_styled(&mut self, content: &Content) -> Node;
 }
 
 pub trait ContentType {
@@ -64,6 +66,8 @@ pub trait ContentType {
     fn is_primes(&self) -> bool;
     fn is_accent(&self) -> bool;
     fn is_sequence(&self) -> bool;
+    fn is_symbol(&self) -> bool;
+    fn is_styled(&self) -> bool;
 
     fn to_equation(&self) -> &typst::math::EquationElem;
     fn to_space(&self) -> &typst::text::SpaceElem;
@@ -94,6 +98,8 @@ pub trait ContentType {
     fn to_primes(&self) -> &typst::math::PrimesElem;
     fn to_accent(&self) -> &typst::math::AccentElem;
     fn to_sequence(&self) -> Option<impl Iterator<Item = &Content>>;
+    fn to_symbol(&self) -> &typst::foundations::SymbolElem;
+    fn to_styled(&self) -> &typst::foundations::StyledElem;
 }
 
 impl ContentType for Content {
@@ -184,6 +190,12 @@ impl ContentType for Content {
     fn is_sequence(&self) -> bool {
         self.is::<typst::foundations::SequenceElem>()
     }
+    fn is_symbol(&self) -> bool {
+        self.is::<typst::foundations::SymbolElem>()
+    }
+    fn is_styled(&self) -> bool {
+        self.is::<typst::foundations::StyledElem>()
+    }
 
     fn to_equation(&self) -> &typst::math::EquationElem {
         self.to_packed::<typst::math::EquationElem>().unwrap()
@@ -269,11 +281,16 @@ impl ContentType for Content {
     fn to_accent(&self) -> &typst::math::AccentElem {
         self.to_packed::<typst::math::AccentElem>().unwrap()
     }
-
     fn to_sequence(&self) -> Option<impl Iterator<Item = &Content>> {
         let sequence = self.to_packed::<typst::foundations::SequenceElem>()?;
 
         Some(sequence.children.iter())
+    }
+    fn to_symbol(&self) -> &typst::foundations::SymbolElem {
+        self.to_packed::<typst::foundations::SymbolElem>().unwrap()
+    }
+    fn to_styled(&self) -> &typst::foundations::StyledElem {
+        self.to_packed::<typst::foundations::StyledElem>().unwrap()
     }
 }
 
@@ -313,6 +330,8 @@ impl ContentExt for Content {
             _ if self.is_scripts() => visitor.visit_scripts(self),
             _ if self.is_primes() => visitor.visit_primes(self),
             _ if self.is_accent() => visitor.visit_accent(self),
+            _ if self.is_symbol() => visitor.visit_symbol(self),
+            _ if self.is_styled() => visitor.visit_styled(self),
             // This ignores the elements and gracefully fails;
             // Must add results and errors eventually.
             _ => Node::Array(vec![]),

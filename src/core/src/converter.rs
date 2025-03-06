@@ -30,6 +30,22 @@ impl ContentVisitor for ContentConverter<'_> {
         Node::Array(elem.body.accept(self).into_array())
     }
 
+    fn visit_symbol(&mut self, content: &Content) -> Node {
+        let elem = content.to_symbol();
+        let name = elem.text;
+        match name {
+            '≔' => symbol::define(),
+            '≠' => symbol::neq(),
+            _ => Node::Node(katex::Symbol::get(katex::Mode::Math, name).create_node())
+        }
+    }
+
+    fn visit_styled(&mut self, content: &Content) -> Node {
+        let elem = content.to_styled();
+        
+        elem.child.accept(self)
+    }
+
     fn visit_op(&mut self, content: &Content) -> Node {
         let elem = content.to_op();
 
