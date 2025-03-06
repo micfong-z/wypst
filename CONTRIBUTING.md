@@ -2,6 +2,14 @@
 
 Okay so this has been HEAVILY modified for my personal use. Here's barely an ad-hoc solution to build everything up.
 
+### Either
+
+```sh
+make all
+```
+
+### Or
+
 ```sh
 npm install
 make wasm
