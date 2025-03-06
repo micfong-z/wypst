@@ -2,6 +2,7 @@ use log::warn;
 
 use typst;
 use typst::foundations::Content;
+use typst::math::Accent;
 
 use crate::katex;
 use crate::node::*;
@@ -501,13 +502,66 @@ impl ContentVisitor for ContentConverter<'_> {
     }
 
     fn visit_primes(&mut self, content: &Content) -> Node {
-        // unsupported
-        unimplemented!()
+        let elem = content.to_primes();
+
+        let node = katex::OrdGroupBuilder::default()
+            .body(vec![katex::Symbol::get(katex::Mode::Math, '′').create_node(); *elem.count()])
+            .build().unwrap().into_node();
+        Node::Node(node)
     }
 
-    fn visit_accent(&mut self, content: &Content) -> Node {
-        // unsupported
-        unimplemented!()
+    fn visit_accent(&mut self, content: &Content) -> Node { 
+        let elem = content.to_accent();
+        
+        let _label = if elem.accent() == &Accent::new('\u{300}') {
+            "\\grave".to_string()
+        } else if elem.accent() == &Accent::new('\u{301}') {
+            "\\acute".to_string()
+        } else if elem.accent() == &Accent::new('\u{302}') {
+            "\\hat".to_string()
+        } else if elem.accent() == &Accent::new('\u{303}') {
+            "\\tilde".to_string()
+        } else if elem.accent() == &Accent::new('\u{304}') {
+            "\\bar".to_string()
+        } else if elem.accent() == &Accent::new('\u{305}') {
+            "\\overline".to_string()
+        } else if elem.accent() == &Accent::new('\u{306}') {
+            "\\breve".to_string()
+        } else if elem.accent() == &Accent::new('\u{307}') {
+            "\\dot".to_string()
+        } else if elem.accent() == &Accent::new('\u{308}') {
+            "\\ddot".to_string()
+        } else if elem.accent() == &Accent::new('\u{20db}') {
+            "\\dddot".to_string()
+        } else if elem.accent() == &Accent::new('\u{20dc}') {
+            "\\ddddot".to_string()
+        } else if elem.accent() == &Accent::new('\u{30a}') {
+            "\\mathring".to_string()
+        } else if elem.accent() == &Accent::new('\u{30b}') {
+            "\\H".to_string()
+        } else if elem.accent() == &Accent::new('\u{30c}') {
+            "\\check".to_string()
+        } else if elem.accent() == &Accent::new('\u{20d7}') {
+            "\\overrightarrow".to_string()
+        } else if elem.accent() == &Accent::new('\u{20d6}') {
+            "\\overleftarrow".to_string()
+        } else if elem.accent() == &Accent::new('\u{20e1}') {
+            "\\overleftrightarrow".to_string()
+        } else if elem.accent() == &Accent::new('\u{20d1}') {
+            "\\overrightharpoon".to_string()
+        } else if elem.accent() == &Accent::new('\u{20d0}') {
+            "\\overleftharpoon".to_string()
+        } else {
+            unimplemented!()
+        };
+        let _base = elem.base();
+        let node = katex::AccentBuilder::default()
+            .label(_label)
+            .is_stretchy(Some(true))
+            .is_shifty(Some(false))
+            .base(Box::new(_base.accept(self).into_ordgroup(katex::Mode::Math).into_node()))
+            .build().unwrap().into_node();
+        Node::Node(node)
     }
 }
 
