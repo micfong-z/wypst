@@ -1,5 +1,5 @@
 use log::warn;
-use typst::foundations::{Chainable, Content, StyleChain};
+use typst::{foundations::{Chainable, Content, Element, Smart, StyleChain}, math::{EquationElem, MathVariant}};
 
 use crate::{katex, node::*, content::*, utils::insert_separator, symbol};
 
@@ -26,12 +26,57 @@ impl ContentVisitor for ContentConverter {
 
     fn visit_symbol(&mut self, content: &Content, style_chain: &StyleChain) -> Node {
         let elem = content.to_symbol();
-        let name = elem.text;
-        // TODO: HANDLE STYLES HERE
-        match name {
-            '≔' => symbol::define(),
-            '≠' => symbol::neq(),
-            _ => Node::Node(katex::Symbol::get(katex::Mode::Math, name).create_node())
+        let name = elem.text;let variant = style_chain.get(Element::of::<EquationElem>(), 6, None, || {
+            MathVariant::Serif
+        });
+        if style_chain.entries().count() == 0 {
+            match name {
+                '≔' => symbol::define(),
+                '≠' => symbol::neq(),
+                _ => Node::Node(katex::Symbol::get(katex::Mode::Math, name).create_node())
+            }
+        } else {
+            let bold = style_chain.get(Element::of::<EquationElem>(), 8, None, || false);
+            let italic = style_chain.get(Element::of::<EquationElem>(), 9, None, || {
+                Smart::<bool>::Custom(true)
+            }) == Smart::Custom(true);
+
+            let font = match variant {
+                MathVariant::Serif => {
+                    if bold && italic {
+                        "boldsymbol"
+                    } else if bold {
+                        "mathbf"
+                    } else if italic {
+                        "mathit"
+                    } else {
+                        "mathrm"
+                    }
+                }
+                MathVariant::Sans => {
+                    if italic {
+                        "mathsfit"
+                    } else {
+                        "mathsf"
+                    }
+                },
+                MathVariant::Cal => "mathcal",
+                MathVariant::Frak => "mathfrak",
+                MathVariant::Mono => "mathtt",
+                MathVariant::Bb => "mathbb",
+            }.to_string();
+
+            let body = match name {
+                '≔' => symbol::define(),
+                '≠' => symbol::neq(),
+                _ => Node::Node(katex::Symbol::get(katex::Mode::Math, name).create_node())
+            }.into_node().unwrap();
+            
+            let node = katex::FontBuilder::default()
+                .body(Box::new(body))
+                .font(font)
+                .build().unwrap().into_node();
+            Node::Node(node)
         }
     }
 
