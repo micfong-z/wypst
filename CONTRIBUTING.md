@@ -1,24 +1,11 @@
 ## Setup
 
-Okay so this has been HEAVILY modified for my personal use. Here's barely an ad-hoc solution to build everything up.
-
-### Either
+Run:
 
 ```sh
 make all
 ```
 
-### Or
+Then start a local server of `test/dist` starts a testing web page.
 
-```sh
-npm install
-make wasm
-make build
-cd test
-npm install
-cd test
-webpack
-```
-Then copy `dist/wypst.wasm` to `test/dist/wypst.wasm` for some reason.
-
-Then the test at `test/dist` works.
+Compiled library files are under `dist` directory.
