@@ -179,52 +179,10 @@ impl ContentVisitor for ContentConverter {
     }
 
     fn visit_space(&mut self, content: &Content, style_chain: &StyleChain) -> Node {
-        let sequence: Vec<_> = self.parent.as_ref().unwrap().to_sequence().unwrap().collect();
-        let left = sequence.get(self.position.unwrap() - 1);
-        let right = sequence.get(self.position.unwrap() + 1);
-
-        fn induced_space(elem: &Content) -> Option<Node> {
-            if elem.is_text() {
-                let text = &elem.to_text().text;
-                if text.chars().count() == 1 {
-                    match text.as_str() {
-                        "|" => {
-                            let node = katex::KernBuilder::default()
-                                .mode(katex::Mode::Math)
-                                .dimension(katex::Measurement {
-                                    number: 5f32,
-                                    unit: "mu".to_string(),
-                                }).build().unwrap().into_node();
-                            return Some(Node::Node(node));
-                        }
-                        _ => return None
-                    }
-                }
-                if text.chars().count() > 1 {
-                    let node = katex::SpacingBuilder::default()
-                        .mode(katex::Mode::Math)
-                        .text("\\ ".to_string())
-                        .build().unwrap().into_node();
-                    return Some(Node::Node(node));
-                }
-            }
-            None
-        }
-
-        if let Some(elem) = right {
-            if elem.is_linebreak() || elem.is_align_point() {
-                return Node::Array(Vec::new());
-            }
-            if let Some(space) = induced_space(elem) {
-                return space;
-            }
-        }
-        if let Some(elem) = left {
-            if let Some(space) = induced_space(elem) {
-                return space;
-            }
-        }
-        Node::Array(Vec::new())
+        Node::Node(katex::SpacingBuilder::default()
+            .mode(katex::Mode::Math)
+            .text("\\ ".to_string())
+            .build().unwrap().into_node())
     }
 
     fn visit_text(&mut self, content: &Content, style_chain: &StyleChain) -> Node {
